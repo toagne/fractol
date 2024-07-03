@@ -4,7 +4,7 @@ LIBMLX	:= ./MLX42
 LIBFT	:= ./libft
 
 HEADERS		:= -I ./include -I $(LIBMLX)/include
-LIBS		:= $(LIBMLX)/build/libmlx42.a -ldl -lglfw -pthread -lm
+LIBS		:= $(LIBMLX)/build/libmlx42.a -ldl -lglfw -pthread -lm -g
 SRCS		:= ./src/main.c
 OBJS		:= ${SRCS:.c=.o}
 

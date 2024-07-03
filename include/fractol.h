@@ -6,7 +6,7 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/01 09:40:06 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/02 15:59:39 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/03 15:27:15 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,14 @@ typedef struct s_fractol
     double          x_shift;
     double          y_shift;
     int             definition;
+    double          min_x;
+    double          max_x;
+    double          min_y;
+    double          max_y;
+    double          old_min_x;
+    double          old_max_x;
+    double          old_min_y;
+    double          old_max_y;
 }   t_fractol;
 
 typedef struct s_complex_num

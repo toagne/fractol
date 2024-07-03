@@ -6,7 +6,7 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/28 16:04:04 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/02 16:16:13 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/03 16:19:29 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ uint32_t get_colour(int n, t_fractol *fractol)
     return (get_rgba(r, g, b, 255));
 }
 
-void    create_fractal(int x, int y, t_fractol *fractol)
+void    create_fractal(int x, int y, t_fractol *f)
 {
     t_complex_num       z;
     t_complex_num       c;
@@ -104,21 +104,21 @@ void    create_fractal(int x, int y, t_fractol *fractol)
     n = 0;
     z.x = 0.0;
     z.y = 0.0;
-    c.x = (ft_scale(x, -2, 2, WIDTH) * fractol->zoom) + fractol->x_shift;
-    c.y = (ft_scale(y, 2, -2, HEIGHT) * fractol->zoom) + fractol->y_shift;
-    while(n < fractol->definition)
+    c.x = (ft_scale(x, -2, 2, WIDTH) * f->zoom) + f->x_shift;
+    c.y = (ft_scale(y, 2, -2, HEIGHT) * f->zoom) + f->y_shift;
+    while(n < f->definition)
     {
         z = mandelbrot_equation(z, c);
         if ((z.x * z.x) + (z.y * z.y) > 4)
         {
-            color = get_colour(n, fractol);
+            color = get_colour(n, f);
             //printf("iteration %d, colour 0x%08X\n", n, color);
-            mlx_put_pixel(fractol->mlx_image, x, y, color);
+            mlx_put_pixel(f->mlx_image, x, y, color);
             return;
         }
         n++;
     }
-    mlx_put_pixel(fractol->mlx_image, x, y, COLOR_WHITE);
+    mlx_put_pixel(f->mlx_image, x, y, COLOR_WHITE);
 }
 
 void    ft_fractol(t_fractol *fractol)
@@ -141,17 +141,33 @@ void    ft_mouse(double xdelta, double ydelta, void* param)
     t_fractol   *fractol;
     int32_t     x_mouse;
     int32_t     y_mouse;
+    double  scaled_x;
+    double  scaled_y;
+    double  zoom_factor;
     
     (void)xdelta;
     fractol = (t_fractol *)param;
     mlx_get_mouse_pos(fractol->mlx_start, &x_mouse, &y_mouse);
-    //fractol->x_shift += x_mouse;
-    //fractol->y_shift += y_mouse;
-    //printf("%d   %d\n", x_mouse, y_mouse);
     if (ydelta < 0)
-        fractol->zoom *= 0.95;
+        zoom_factor = 0.95;
     else if (ydelta > 0)
-        fractol->zoom *= 1.05;
+        zoom_factor = 1.05;
+    fractol->zoom *= zoom_factor;
+    printf("%f   %f\n", fractol->x_shift, fractol->y_shift);
+    scaled_x = ft_scale(x_mouse, fractol->min_x, fractol->max_x, WIDTH);
+    scaled_y = ft_scale(y_mouse, fractol->min_y, fractol->max_y, HEIGHT);
+    //fractol->old_min_x = fractol->min_x;
+    //fractol->old_max_x = fractol->max_x;
+    //fractol->old_min_y = fractol->min_y;
+    //fractol->old_max_y = fractol->max_y;
+    fractol->min_x = scaled_x - (scaled_x - fractol->min_x) * fractol->zoom;
+    fractol->max_x = scaled_x + (fractol->max_x - scaled_x) * fractol->zoom;
+    fractol->min_y = scaled_y - (scaled_y - fractol->min_y) * fractol->zoom;
+    fractol->max_y = scaled_y + (fractol->max_y - scaled_y) * fractol->zoom;
+    fractol->x_shift += (fractol->min_x + fractol->max_x) / 2;
+    fractol->y_shift += (fractol->min_y + fractol->max_y) / 2;
+    printf("%d   %d\n", x_mouse, y_mouse);
+    printf("%f   %f\n", fractol->x_shift, fractol->y_shift);
     ft_fractol(fractol);
 }
 
@@ -177,6 +193,22 @@ void    ft_keyboard(mlx_key_data_t keydata, void* param)
     ft_fractol(fractol);
 }
 
+void    ft_init(t_fractol *fractol)
+{
+    fractol->zoom = 1.0;
+    fractol->x_shift = 0.0;
+    fractol->y_shift = 0.0;
+    fractol->definition = 20;
+    fractol->old_min_x = 0;
+    fractol->old_max_x = WIDTH;
+    fractol->old_min_y = 0;
+    fractol->old_max_y = HEIGHT;
+    fractol->min_x = -2;
+    fractol->max_x = 2;
+    fractol->min_y = 2;
+    fractol->max_y = -2;
+}
+
 int main(int argc, char **argv)
 {
     t_fractol   fractol;
@@ -189,10 +221,11 @@ int main(int argc, char **argv)
         fractol.mlx_image = mlx_new_image(fractol.mlx_start, WIDTH, HEIGHT);
         if (!fractol.mlx_image)
             ft_error();
-        fractol.x_shift = 0.0;
-        fractol.y_shift = 0.0;
-        fractol.zoom = 1.0;
-        fractol.definition = 20;
+        //fractol.x_shift = 0.0;
+        //fractol.y_shift = 0.0;
+        //fractol.zoom = 1.0;
+        //fractol.definition = 20;
+        ft_init(&fractol);
         ft_fractol(&fractol);
         mlx_key_hook(fractol.mlx_start, &ft_keyboard, &fractol);
         mlx_scroll_hook(fractol.mlx_start, &ft_mouse, &fractol);
