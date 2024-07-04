@@ -6,13 +6,13 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/28 16:04:04 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/03 16:19:29 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/04 17:44:53 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fractol.h"
 
-int	ft_strcmp(char *str1, const char *str2)
+int	ft_strcmp_1(char *str1, const char *str2)
 {
 	while (*str1 && (*str1 == *str2))
 	{
@@ -52,8 +52,8 @@ unsigned int get_rgba(int r, int g, int b, int a)
 {
     return ((a) | (r << 24) | (g << 16) | (b << 8));
 }
-/*
-uint32_t    get_color(int n)
+
+uint32_t    get_scaled_color(int n, t_fractol *f)
 {
     int  rgb_start[3];
     int  rgb_end[3];
@@ -64,13 +64,29 @@ uint32_t    get_color(int n)
     rgb_end[0] = 255;
     rgb_end[1] = 255;
     rgb_end[2] = 255;
-    rgb_start[0] = rgb_start[0] + (n * ((rgb_end[0] - rgb_start[0]) / (MAX_ITERATIONS - 1)));
-    rgb_start[1] = rgb_start[1] + (n * ((rgb_end[1] - rgb_start[1]) / (MAX_ITERATIONS - 1)));
-    rgb_start[2] = rgb_start[2] + (n * ((rgb_end[2] - rgb_start[2]) / (MAX_ITERATIONS - 1)));
+    rgb_start[0] = rgb_start[0] + (n * ((rgb_end[0] - rgb_start[0]) / (f->definition - 1)));
+    rgb_start[1] = rgb_start[1] + (n * ((rgb_end[1] - rgb_start[1]) / (f->definition - 1)));
+    rgb_start[2] = rgb_start[2] + (n * ((rgb_end[2] - rgb_start[2]) / (f->definition - 1)));
+    return (get_rgba(rgb_start[0], rgb_start[1], rgb_start[2], 255));
+}
+/*
+uint32_t    get_scaled_color_1(int n, t_fractol *f)
+{
+    int  rgb_start[3];
+    int  rgb_end[3];
+
+    rgb_start[0] = 255;
+    rgb_start[1] = 255;
+    rgb_start[2] = 0;
+    rgb_end[0] = 255;
+    rgb_end[1] = 0;
+    rgb_end[2] = 0;
+    rgb_start[0] = rgb_start[0] + (n * ((rgb_end[0] - rgb_start[0]) / (f->definition - 1)));
+    rgb_start[1] = rgb_start[1] + (n * ((rgb_end[1] - rgb_start[1]) / (f->definition - 1)));
+    rgb_start[2] = rgb_start[2] + (n * ((rgb_end[2] - rgb_start[2]) / (f->definition - 1)));
     return (get_rgba(rgb_start[0], rgb_start[1], rgb_start[2], 255));
 }
 */
-
 int    random_n(int n, t_fractol *fractol)
 {
     long LCG_A = 16645525;
@@ -82,7 +98,7 @@ int    random_n(int n, t_fractol *fractol)
     return (lcg_seed);
 }
 
-uint32_t get_colour(int n, t_fractol *fractol)
+uint32_t get_random_color(int n, t_fractol *fractol)
 {
     int r;
     int g;
@@ -100,25 +116,48 @@ void    create_fractal(int x, int y, t_fractol *f)
     t_complex_num       c;
     int                 n;
     uint32_t            color;
+    uint32_t            new_color;
 
     n = 0;
-    z.x = 0.0;
-    z.y = 0.0;
-    c.x = (ft_scale(x, -2, 2, WIDTH) * f->zoom) + f->x_shift;
-    c.y = (ft_scale(y, 2, -2, HEIGHT) * f->zoom) + f->y_shift;
+    new_color = 0;
+    //z.x = 0.0;
+    //z.y = 0.0;
+    z.x = ft_scale(x, f->min_x, f->max_x, WIDTH) + f->x_shift;
+    z.y = ft_scale(y, f->max_y, f->min_y, HEIGHT) + f->y_shift;
+    if (!ft_strcmp_1(f->set, "mandelbrot"))
+    {
+        c.x = z.x;
+        c.y = z.y;
+    }
+    else
+    {
+        c.x = f->x_julia;
+        c.y = f->y_julia;
+    }
     while(n < f->definition)
     {
         z = mandelbrot_equation(z, c);
         if ((z.x * z.x) + (z.y * z.y) > 4)
         {
-            color = get_colour(n, f);
-            //printf("iteration %d, colour 0x%08X\n", n, color);
+            if (n < 10)
+                color = get_scaled_color(n, f);
+            //else if (n == f->definition - 1)
+            //{
+            //    color = new_color;
+            //}
+            else
+            {/*
+                color = get_scaled_color_1(n, f);*/
+                //color = get_random_color(n, f);
+                color  = get_random_color(n, f);
+                //new_color = color;
+            }
             mlx_put_pixel(f->mlx_image, x, y, color);
             return;
         }
         n++;
     }
-    mlx_put_pixel(f->mlx_image, x, y, COLOR_WHITE);
+    mlx_put_pixel(f->mlx_image, x, y, 0x000000FF);
 }
 
 void    ft_fractol(t_fractol *fractol)
@@ -138,37 +177,31 @@ void    ft_fractol(t_fractol *fractol)
 
 void    ft_mouse(double xdelta, double ydelta, void* param)
 {
-    t_fractol   *fractol;
+    t_fractol   *f;
     int32_t     x_mouse;
     int32_t     y_mouse;
     double  scaled_x;
     double  scaled_y;
-    double  zoom_factor;
+    double  new_x_range;
+    double  new_y_range;
+
     
     (void)xdelta;
-    fractol = (t_fractol *)param;
-    mlx_get_mouse_pos(fractol->mlx_start, &x_mouse, &y_mouse);
+    f = (t_fractol *)param;
+    mlx_get_mouse_pos(f->mlx_start, &x_mouse, &y_mouse);
     if (ydelta < 0)
-        zoom_factor = 0.95;
+        f->zoom = 0.95;
     else if (ydelta > 0)
-        zoom_factor = 1.05;
-    fractol->zoom *= zoom_factor;
-    printf("%f   %f\n", fractol->x_shift, fractol->y_shift);
-    scaled_x = ft_scale(x_mouse, fractol->min_x, fractol->max_x, WIDTH);
-    scaled_y = ft_scale(y_mouse, fractol->min_y, fractol->max_y, HEIGHT);
-    //fractol->old_min_x = fractol->min_x;
-    //fractol->old_max_x = fractol->max_x;
-    //fractol->old_min_y = fractol->min_y;
-    //fractol->old_max_y = fractol->max_y;
-    fractol->min_x = scaled_x - (scaled_x - fractol->min_x) * fractol->zoom;
-    fractol->max_x = scaled_x + (fractol->max_x - scaled_x) * fractol->zoom;
-    fractol->min_y = scaled_y - (scaled_y - fractol->min_y) * fractol->zoom;
-    fractol->max_y = scaled_y + (fractol->max_y - scaled_y) * fractol->zoom;
-    fractol->x_shift += (fractol->min_x + fractol->max_x) / 2;
-    fractol->y_shift += (fractol->min_y + fractol->max_y) / 2;
-    printf("%d   %d\n", x_mouse, y_mouse);
-    printf("%f   %f\n", fractol->x_shift, fractol->y_shift);
-    ft_fractol(fractol);
+        f->zoom = 1.05;
+    scaled_x = ft_scale(x_mouse, f->min_x, f->max_x, WIDTH);
+    scaled_y = ft_scale(y_mouse, f->max_y, f->min_y, HEIGHT);
+    new_x_range = (f->max_x - f->min_x) * f->zoom;
+    new_y_range = (f->max_y - f->min_y) * f->zoom;
+    f->min_x = scaled_x - ((double)x_mouse / WIDTH) * new_x_range;
+    f->max_x = f->min_x + new_x_range;
+    f->min_y = scaled_y - (1 - (double)y_mouse / HEIGHT) * new_y_range;
+    f->max_y = f->min_y + new_y_range;
+    ft_fractol(f);
 }
 
 void    ft_keyboard(mlx_key_data_t keydata, void* param)
@@ -177,19 +210,22 @@ void    ft_keyboard(mlx_key_data_t keydata, void* param)
 
     fractol = (t_fractol *)param;
 //    if (keydata.key == MLX_KEY_ESCAPE && keydata.action == MLX_PRESS)
-//
     if (keydata.key == MLX_KEY_KP_ADD && keydata.action == MLX_PRESS)
-        fractol->definition += 10;
+        fractol->definition += 1;
     if (keydata.key == MLX_KEY_KP_SUBTRACT && keydata.action == MLX_PRESS)
-        fractol->definition -= 10;
+        fractol->definition -= 1;
     if (keydata.key == MLX_KEY_UP && keydata.action == MLX_PRESS)
-        fractol->y_shift += (0.5 * fractol->zoom);
+        fractol->y_shift += (fractol->max_y - fractol->min_y) * 0.1;
+        //fractol->y_shift += (0.5 * fractol->zoom);
     if (keydata.key == MLX_KEY_DOWN && keydata.action == MLX_PRESS)
-        fractol->y_shift -= (0.5 * fractol->zoom);
+        fractol->y_shift -= (fractol->max_y - fractol->min_y) * 0.1;
+        //fractol->y_shift -= (0.5 * fractol->zoom);
     if (keydata.key == MLX_KEY_RIGHT && keydata.action == MLX_PRESS)
-        fractol->x_shift += (0.5 * fractol->zoom);
+        fractol->x_shift += (fractol->max_x - fractol->min_x) * 0.1;
+        //fractol->x_shift += (0.5 * fractol->zoom);
     if (keydata.key == MLX_KEY_LEFT && keydata.action == MLX_PRESS)
-        fractol->x_shift -= (0.5 * fractol->zoom);
+        fractol->x_shift -= (fractol->max_x - fractol->min_x) * 0.1;
+        //fractol->x_shift -= (0.5 * fractol->zoom);
     ft_fractol(fractol);
 }
 
@@ -198,47 +234,27 @@ void    ft_init(t_fractol *fractol)
     fractol->zoom = 1.0;
     fractol->x_shift = 0.0;
     fractol->y_shift = 0.0;
-    fractol->definition = 20;
-    fractol->old_min_x = 0;
-    fractol->old_max_x = WIDTH;
-    fractol->old_min_y = 0;
-    fractol->old_max_y = HEIGHT;
+    fractol->definition = 15;
     fractol->min_x = -2;
     fractol->max_x = 2;
-    fractol->min_y = 2;
-    fractol->max_y = -2;
+    fractol->min_y = -2;
+    fractol->max_y = 2;
 }
 
 int main(int argc, char **argv)
 {
     t_fractol   fractol;
 
-    if (2 == argc && !ft_strcmp(argv[1], "mandelbrot"))
-    {
-        fractol.mlx_start = mlx_init(WIDTH, HEIGHT, "mandelbrot", true);
-        if (!fractol.mlx_start)
-            ft_error();
-        fractol.mlx_image = mlx_new_image(fractol.mlx_start, WIDTH, HEIGHT);
-        if (!fractol.mlx_image)
-            ft_error();
-        //fractol.x_shift = 0.0;
-        //fractol.y_shift = 0.0;
-        //fractol.zoom = 1.0;
-        //fractol.definition = 20;
-        ft_init(&fractol);
-        ft_fractol(&fractol);
-        mlx_key_hook(fractol.mlx_start, &ft_keyboard, &fractol);
-        mlx_scroll_hook(fractol.mlx_start, &ft_mouse, &fractol);
-        mlx_loop(fractol.mlx_start);
-        mlx_terminate(fractol.mlx_start);
-    }
-    else if (4 == argc && ft_strcmp(argv[1], "julia"))
-    {
-
-    }
-    else
-    {
-        ft_putstr_fd(ERROR_MESSAGE, STDERR_FILENO);
-        exit (EXIT_FAILURE);
-    }
+    fractol.mlx_start = mlx_init(WIDTH, HEIGHT, "mandelbrot", true);
+    if (!fractol.mlx_start)
+        ft_error();
+    fractol.mlx_image = mlx_new_image(fractol.mlx_start, WIDTH, HEIGHT);
+    if (!fractol.mlx_image)
+        ft_error();
+    check_arguments(argc, argv, &fractol);
+    ft_init(&fractol);
+    ft_fractol(&fractol);
+    mlx_key_hook(fractol.mlx_start, &ft_keyboard, &fractol);
+    mlx_scroll_hook(fractol.mlx_start, &ft_mouse, &fractol);
+    mlx_loop(fractol.mlx_start);
 }

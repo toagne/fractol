@@ -6,12 +6,12 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/01 09:40:06 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/03 15:27:15 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/04 14:59:23 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef FRACTAL_H
-# define FRACTAL_H
+#ifndef FRACTOL_H
+# define FRACTOL_H
 
 # include <unistd.h>
 # include <math.h>
@@ -48,10 +48,9 @@ typedef struct s_fractol
     double          max_x;
     double          min_y;
     double          max_y;
-    double          old_min_x;
-    double          old_max_x;
-    double          old_min_y;
-    double          old_max_y;
+    char            *set;
+    double          x_julia;
+    double          y_julia;
 }   t_fractol;
 
 typedef struct s_complex_num
@@ -60,5 +59,7 @@ typedef struct s_complex_num
     double  y;
 //    double  escape_value;
 }   t_complex_num;
+
+void check_arguments(int argc, char **argv, t_fractol *f);
 
 #endif
