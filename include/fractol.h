@@ -6,7 +6,7 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/01 09:40:06 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/04 14:59:23 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/05 17:59:45 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <stdio.h>
 # include "../libft/libft.h"
 # include "../MLX42/include/MLX42/MLX42.h"
+#include <string.h>
 
 # define ERROR_MESSAGE "please enter one of the following:\n\"./fractol mandelbrot\"\n\"./fractol julia <value_1> <value_2>\""
 
@@ -51,6 +52,7 @@ typedef struct s_fractol
     char            *set;
     double          x_julia;
     double          y_julia;
+    int             **point;
 }   t_fractol;
 
 typedef struct s_complex_num
@@ -61,5 +63,6 @@ typedef struct s_complex_num
 }   t_complex_num;
 
 void check_arguments(int argc, char **argv, t_fractol *f);
+void ft_init(t_fractol *fractol);
 
 #endif

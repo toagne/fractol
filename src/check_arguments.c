@@ -6,7 +6,7 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:23:37 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/04 15:41:45 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/05 10:18:17 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,8 @@ void	check_arguments(int argc, char **argv, t_fractol *f)
 {
 	if (argc == 2 && !ft_strcmp(argv[1], "mandelbrot"))
 		f->set = "mandelbrot";
+	else if (argc == 2 && !ft_strcmp(argv[1], "felce"))
+		f->set = "felce";
 	else if (argc == 4 && !ft_strcmp(argv[1], "julia"))
 	{
 		f->set = "julia";
