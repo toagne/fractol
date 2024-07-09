@@ -6,7 +6,7 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/01 09:40:06 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/05 17:59:45 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/09 11:56:51 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,11 @@
 # define WIDTH 1500
 # define HEIGHT 1500
 //# define MAX_ITERATIONS 100
+# define BPP sizeof(int32_t)
+
+/*# define LCG_A 1103515245
+# define LCG_C 12345
+# define LCG_M 2147483648  // 2^31*/
 
 #define COLOR_BLACK      0xFF000000
 #define COLOR_WHITE      0xFFFFFFFF
@@ -52,7 +57,9 @@ typedef struct s_fractol
     char            *set;
     double          x_julia;
     double          y_julia;
-    int             **point;
+    int             *point;
+    int             start_color;
+    int             random_color;
 }   t_fractol;
 
 typedef struct s_complex_num

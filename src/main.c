@@ -6,7 +6,7 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/28 16:04:04 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/05 18:02:15 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/09 12:18:33 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,13 +72,13 @@ uint32_t    get_scaled_color(int n, t_fractol *f)
 
 int    random_n(int n, t_fractol *fractol)
 {
-    long LCG_A = 16645525;
-    long LCG_C = 1013904223;
-    long LCG_M = 4294967296;
-    int lcg_seed = n + fractol->definition;
+    long LCG__A = 1103515245;
+    long LCG__C = 12345;
+    long LCG__M = 2147483648;
+    int lcg__seed = n + fractol->definition;
 
-    lcg_seed = (((LCG_A * lcg_seed + LCG_C) % LCG_M) % 256);
-    return (lcg_seed);
+    lcg__seed = ((LCG__A * lcg__seed + LCG__C) % LCG__M);
+    return (lcg__seed);
 }
 
 uint32_t get_random_color(int n, t_fractol *fractol)
@@ -87,10 +87,56 @@ uint32_t get_random_color(int n, t_fractol *fractol)
     int g;
     int b;
 
-    r = random_n(n, fractol);
-    g = random_n(r, fractol);
-    b = random_n(g, fractol);
+    r = random_n(n, fractol) % 256;
+    g = random_n(r, fractol) % 256;
+    b = random_n(g, fractol) % 256;
     return (get_rgba(r, g, b, 255));
+}
+
+int get_r(int rgba)
+{
+    // Move 3 bytes to the right and mask out the first byte.
+    return ((rgba >> 24) & 0xFF);
+}
+
+// Get the green channel.
+int get_g(int rgba)
+{
+    // Move 2 bytes to the right and mask out the first byte.
+    return ((rgba >> 16) & 0xFF);
+}
+
+// Get the blue channel.
+int get_b(int rgba)
+{
+    // Move 1 byte to the right and mask out the first byte.
+    return ((rgba >> 8) & 0xFF);
+}
+
+// Get the alpha channel.
+int get_a(int rgba)
+{
+    // Move 0 bytes to the right and mask out the first byte.
+    return (rgba & 0xFF);
+}
+
+uint32_t    get_scaled_color_1(int color, int new_color, t_fractol *f, int n)
+{
+    int  rgb_start[3];
+    int  rgb_end[3];
+    //float ratio;
+
+    rgb_start[0] = get_r(color);
+    rgb_start[1] = get_g(color);
+    rgb_start[2] = get_b(color);
+    rgb_end[0] = get_r(new_color);
+    rgb_end[1] = get_g(new_color);
+    rgb_end[2] = get_b(new_color);
+    //ratio = n / 9.0;
+    rgb_start[0] = rgb_start[0] + n * (rgb_end[0] - rgb_start[0])/9;
+    rgb_start[1] = rgb_start[1] + n * (rgb_end[1] - rgb_start[1])/9;
+    rgb_start[2] = rgb_start[2] + n * (rgb_end[2] - rgb_start[2])/9;
+    return (get_rgba(rgb_start[0], rgb_start[1], rgb_start[2], 255));
 }
 
 void    create_fractal(int x, int y, t_fractol *f)
@@ -99,10 +145,12 @@ void    create_fractal(int x, int y, t_fractol *f)
     t_complex_num       c;
     int                 n;
     uint32_t            color;
-    uint32_t            new_color;
+    int                 iteration;
+    int first_color;
+    int second_color;
 
     n = 0;
-    new_color = 0;
+    //new_color = 0;
     //z.x = 0.0;
     //z.y = 0.0;
     z.x = ft_scale(x, f->min_x, f->max_x, WIDTH) + f->x_shift;
@@ -117,15 +165,32 @@ void    create_fractal(int x, int y, t_fractol *f)
         c.x = f->x_julia;
         c.y = f->y_julia;
     }
+    first_color = f->start_color;
+    second_color = f->random_color;
     while(n < f->definition)
     {
+        iteration = n % 10;
+        if (iteration == 0 && n > 0)
+        {
+            first_color = second_color;
+            second_color = get_random_color(n, f);
+        }
+        //printf("iterarion %d, start color = 0x%08X, seond color = 0x%08X\n", n, f->start_color, f->random_color);
+        color = get_scaled_color_1(first_color, second_color, f, iteration);
+        //printf("color = 0x%08X\n\n", color);
         z = mandelbrot_equation(z, c);
         if ((z.x * z.x) + (z.y * z.y) > 4)
         {
-            if (n < 10)
+            /*if (n < 10)
                 color = get_scaled_color(n, f);
             else
                 color  = get_random_color(n, f);
+            if (iteration == 0 && n > 0)
+            {
+                f->start_color = f->random_color;
+                f->random_color = get_random_color(n, f);
+            }
+            color = get_scaled_color_1(f->start_color, f->random_color, f, iteration);*/
             mlx_put_pixel(f->mlx_image, x, y, color);
             return;
         }
@@ -142,14 +207,28 @@ int    reverse_scale(double n, double new_min, double new_max, double old_max)
     return (unscaled_n);
 }
 
+void init_lcg(int *lcg_seed)
+{
+    *lcg_seed = 1103527590;
+}
+
+int my_rand(int *lcg_seed)
+{
+    long LCG_A = 1103515245;
+    long LCG_C = 12345;
+    long LCG_M = 2147483648;
+    *lcg_seed = (LCG_A * (*lcg_seed) + LCG_C) % LCG_M;
+    return (*lcg_seed);
+}
+
 void    create_felce(double x, double y, t_fractol *f)
 {
     double  new_x;
     double  new_y;
-    double  r;
     int     n;
+    int lcg_seed;
 
-    f->point = (int **)malloc(WIDTH * sizeof(int *));
+    /*f->point = (int **)malloc(WIDTH * sizeof(int *));
     if (f->point == NULL)
     {
         fprintf(stderr, "Memory allocation failed.\n");
@@ -164,106 +243,116 @@ void    create_felce(double x, double y, t_fractol *f)
             exit(EXIT_FAILURE);
         }
         // Use memset to initialize to 0
-        memset(f->point[i], 0, HEIGHT * sizeof(int));
-    }
+        //memset(f->point[i], 0, HEIGHT * sizeof(int));
+    }*/
     n = 0;
+    /*int a = -1;
+    while (++a < WIDTH)
+    {
+        memset(f->point[a], 0, HEIGHT * sizeof(int));
+    }*/
+    memset(f->point, 0, WIDTH * HEIGHT * sizeof(unsigned int));
+    /*int i = -1;
+    while (++i < HEIGHT)
+    {
+        int j = -1;
+        while (++j < WIDTH)
+            mlx_put_pixel(f->mlx_image, i, j, 0x000000FF);
+    }*/
+    int case1 = 0, case2 = 0, case3 = 0, case4 = 0;
+    init_lcg(&lcg_seed);
     while (n < f->definition)
     {
-        r = (double)rand() / RAND_MAX;
-        //printf("%f\n", r);
+        //double rr = (double)rand() / RAND_MAX;
+        double r = (double)my_rand(&lcg_seed) / RAND_MAX;
+        //printf("my_r = %f\n", r);
+        //printf("real_r = %f\n\n", rr);
         if (r < 0.01)
         {
             new_x = 0;
             new_y = 0.16 * y;
+            case1++;
         }
         else if (r < 0.86)
         {
             new_x = 0.85 * x + 0.04 * y;
             new_y = -0.04 * x + 0.85 * y + 1.6;
+            case2++;
         }
         else if (r < 0.93)
         {
             new_x = 0.2 * x - 0.26 * y;
             new_y = 0.23 * x + 0.22 * y + 0.44;
+            case3++;
         }
         else
         {
             new_x = -0.15 * x + 0.28 * y;
             new_y = 0.26 * x + 0.24 * y + 0.44;
+            case4++;
         }
+        /*
+        int a = n % 100;
+        printf("a = %d\n", a);
+        if (a < 1)
+        {
+            new_x = 0;
+            new_y = 0.16 * y;
+            case1++;
+        }
+        else if (a < 86)
+        {
+            new_x = 0.85 * x + 0.04 * y;
+            new_y = -0.04 * x + 0.85 * y + 1.6;
+            case2++;
+        }
+        else if (a < 93)
+        {
+            new_x = 0.2 * x - 0.26 * y;
+            new_y = 0.23 * x + 0.22 * y + 0.44;
+            case3++;
+        }
+        else
+        {
+            new_x = -0.15 * x + 0.28 * y;
+            new_y = 0.26 * x + 0.24 * y + 0.44;
+            case4++;
+        }*/
         x = new_x;
         y = new_y;
         //int plotX = (int)((x + 3) * WIDTH / 6);
         //int plotY = HEIGHT - (int)(y * HEIGHT / 10);
-        int plotX = reverse_scale(x, f->min_x, f->max_x, WIDTH);
-        int plotY = reverse_scale(y, f->max_y, f->min_y, HEIGHT);
+        int plotX = reverse_scale(x, f->min_x, f->max_x, WIDTH) + f->x_shift * 10;
+        int plotY = reverse_scale(y, f->max_y, f->min_y, HEIGHT) + f->y_shift * 10;
         //printf("x = %f   y = %f\n", x, y);
         //printf("%f + 2.1820) x %d / 4.8378 = %f\n", x, WIDTH)
-        //printf("ok_x = %d   ok_y = %d\n", plotX, plotY);
-        //printf("my_x = %d   my_y = %d\n\n", plot_X, plot_Y);
+        //printf("iteration = %d    random = %f   x = %d   y = %d\n", n, r, plotX, plotY);
+        //printf("my_x = %d   my_y = %d\n\n", plot_X, plot_Y);   
         if (plotX >= 0 && plotX < WIDTH && plotY >= 0 && plotY < HEIGHT)
-            mlx_put_pixel(f->mlx_image, plotX, plotY, 0x00FF00FF);
+            //f->point[plotX][plotY] = 1;
+            f->point[plotY * HEIGHT + plotX] = 0x00FF00FF;
+        //    mlx_put_pixel(f->mlx_image, plotX, plotY, 0x00FF00FF);
+        //printf("x = %d   y = %d   point = %d\n", plotX, plotY, f->point[plotX][plotY]);
         n++;
     }
-}
-
-/*
-void    create_felce(t_fractol *f)
-{
-    double  new_x;
-    double  new_y;
-    double  r;
-    int     n;
-    int     i;
-    int     j;
-    double x = 0.0;
-    double y = 0.0;
-
-    n = 0;
-    while (n < f->definition)
+    //r = 0;
+    //printf("\n");
+    int i = -1;
+    while (++i < HEIGHT)
     {
-        r = (double)rand() / RAND_MAX;
-        //printf("%f\n", r);
-        if (r < 0.01)
+        int j = -1;
+        while (++j < WIDTH)
         {
-            new_x = 0;
-            new_y = 0.16 * y;
-        }
-        else if (r < 0.86)
-        {
-            new_x = 0.85 * x + 0.04 * y;
-            new_y = -0.04 * x + 0.85 * y + 1.6;
-        }
-        else if (r < 0.93)
-        {
-            new_x = 0.2 * x - 0.26 * y;
-            new_y = 0.23 * x + 0.22 * y + 0.44;
-        }
-        else
-        {
-            new_x = -0.15 * x + 0.28 * y;
-            new_y = 0.26 * x + 0.24 * y + 0.44;
-        }
-        x = new_x;
-        y = new_y;
-        int plotX = reverse_scale(new_x, f->min_x, f->max_x, WIDTH) + f->x_shift;
-        int plotY = reverse_scale(new_y, f->max_y, f->min_y, HEIGHT) + f->y_shift;
-        if (plotX >= 0 && plotX < WIDTH && plotY >= 0 && plotY < HEIGHT)
-            f->point[plotX][plotY] = 1;
-        n++;
-    }
-    i = -1;
-    while (++i < WIDTH)
-    {
-        j = -1;
-        while (++j < HEIGHT)
-        {
-            if (f->point[i][j] == 0)
-                mlx_put_pixel(f->mlx_image, i, j, 0xFF0000FF);
+            int index = j * HEIGHT + i;
+            //if (f->point[i][j] == 1)
+            if (f->point[index] != 0)
+                mlx_put_pixel(f->mlx_image, i, j, f->point[index]);
+            else /*if (f->point[i][j] == 0)*/
+                mlx_put_pixel(f->mlx_image, i, j, 0x000000FF);
         }
     }
+    //printf("definition = %d   case1 = %d   case2 = %d   case3 = %d   case4 = %d\n", f->definition, case1, case2, case3, case4);
 }
-*/
 
 void    ft_fractol(t_fractol *fractol)
 {
@@ -279,12 +368,7 @@ void    ft_fractol(t_fractol *fractol)
         {
             x = -1;
             while (++x < WIDTH)
-            //{
-            //    if (!ft_strcmp_1(fractol->set, "felce"))
-            //        create_felce(x, y, fractol);
-            //    else
-                    create_fractal(x, y, fractol);
-            //}
+                create_fractal(x, y, fractol);
         }
     }
     mlx_image_to_window(fractol->mlx_start, fractol->mlx_image, 0, 0);
@@ -305,23 +389,9 @@ void    ft_mouse(double xdelta, double ydelta, void* param)
     f = (t_fractol *)param;
     mlx_get_mouse_pos(f->mlx_start, &x_mouse, &y_mouse);
     if (ydelta < 0)
-	{
-		if (!ft_strcmp_1(f->set, "felce"))
-		{
-			mlx_delete_image(f->mlx_start, f->mlx_image);
-            f->mlx_image = mlx_new_image(f->mlx_start, WIDTH, HEIGHT);
-		}
 		f->zoom = 0.95;
-	}
     else if (ydelta > 0)
-    {
-        if (!ft_strcmp_1(f->set, "felce"))
-		{
-			mlx_delete_image(f->mlx_start, f->mlx_image);
-			f->mlx_image = mlx_new_image(f->mlx_start, WIDTH, HEIGHT);
-		}
         f->zoom = 1.05;
-    }
     scaled_x = ft_scale(x_mouse, f->min_x, f->max_x, WIDTH);
     scaled_y = ft_scale(y_mouse, f->max_y, f->min_y, HEIGHT);
     new_x_range = (f->max_x - f->min_x) * f->zoom;
@@ -330,7 +400,6 @@ void    ft_mouse(double xdelta, double ydelta, void* param)
     f->max_x = f->min_x + new_x_range;
     f->min_y = scaled_y - (1 - (double)y_mouse / HEIGHT) * new_y_range;
     f->max_y = f->min_y + new_y_range;
-    //if (!ft_strcmp_1(f->set, "felce"))
 	ft_fractol(f);
 }
 
@@ -342,53 +411,37 @@ void    ft_keyboard(mlx_key_data_t keydata, void* param)
 //    if (keydata.key == MLX_KEY_ESCAPE && keydata.action == MLX_PRESS)
     if (keydata.key == MLX_KEY_KP_ADD && keydata.action == MLX_PRESS)
     {
-        fractol->definition += 1;
         if (!ft_strcmp_1(fractol->set, "felce"))
-            ft_fractol(fractol);
+            fractol->definition += 1000000;
+        else
+            fractol->definition += 1;
     }
     if (keydata.key == MLX_KEY_KP_SUBTRACT && keydata.action == MLX_PRESS)
-        fractol->definition -= 1;
+    {
+        if (!ft_strcmp_1(fractol->set, "felce"))
+            fractol->definition -= 1000000;
+        else
+            fractol->definition -= 1;
+    }
     if (keydata.key == MLX_KEY_UP && keydata.action == MLX_PRESS)
-	{
-		if (!ft_strcmp_1(fractol->set, "felce"))
-			fractol->mlx_image->instances[0].y -= 5;
-		else
-			fractol->y_shift += (fractol->max_y - fractol->min_y) * 0.1;
-	}
+		fractol->y_shift += (fractol->max_y - fractol->min_y) * 0.1;
     if (keydata.key == MLX_KEY_DOWN && keydata.action == MLX_PRESS)
-	{
-		if (!ft_strcmp_1(fractol->set, "felce"))
-			fractol->mlx_image->instances[0].y += 5;
-		else
-			fractol->y_shift -= (fractol->max_y - fractol->min_y) * 0.1;
-	}
+		fractol->y_shift -= (fractol->max_y - fractol->min_y) * 0.1;
     if (keydata.key == MLX_KEY_RIGHT && keydata.action == MLX_PRESS)
-	{
-		if (!ft_strcmp_1(fractol->set, "felce"))
-			fractol->mlx_image->instances[0].x += 5;
-		else
-			fractol->x_shift += (fractol->max_x - fractol->min_x) * 0.1;
-	}
+		fractol->x_shift += (fractol->max_x - fractol->min_x) * 0.1;
     if (keydata.key == MLX_KEY_LEFT && keydata.action == MLX_PRESS)
-	{
-		if (!ft_strcmp_1(fractol->set, "felce"))
-			fractol->mlx_image->instances[0].x -= 5;
-		else
-			fractol->x_shift -= (fractol->max_x - fractol->min_x) * 0.1;
-	}
-    if (ft_strcmp_1(fractol->set, "felce"))
-		ft_fractol(fractol);
+		fractol->x_shift -= (fractol->max_x - fractol->min_x) * 0.1;
+	ft_fractol(fractol);
 }
 
 void    ft_init(t_fractol *fractol)
 {
-    //int i = -1;
     fractol->zoom = 1.0;
     fractol->x_shift = 0.0;
     fractol->y_shift = 0.0;
     if (!ft_strcmp_1(fractol->set, "felce"))
     {
-        fractol->definition = 100000;
+        fractol->definition = 1000000;
         fractol->min_x = -3;
         fractol->max_x = 3;
         fractol->min_y = 0;
@@ -396,11 +449,14 @@ void    ft_init(t_fractol *fractol)
     }
     else
     {
-        fractol->definition = 15;
+        fractol->definition = 3;
         fractol->min_x = -2;
         fractol->max_x = 2;
         fractol->min_y = -2;
         fractol->max_y = 2;
+        fractol->start_color = 0x000000FF;
+        fractol->random_color = get_random_color(0, fractol);
+        printf("0x%08X   0x%08X", fractol->start_color, fractol->random_color);
     }
     /*fractol->point = (int **)malloc(WIDTH * sizeof(int *));
     if (fractol->point == NULL)
@@ -408,7 +464,7 @@ void    ft_init(t_fractol *fractol)
         fprintf(stderr, "Memory allocation failed.\n");
         exit(EXIT_FAILURE);
     }
-    for (i = 0; i < WIDTH; i++)
+    for (int i = 0; i < WIDTH; i++)
     {
         fractol->point[i] = (int *)malloc(HEIGHT * sizeof(int));
         if (fractol->point[i] == NULL)
@@ -417,8 +473,9 @@ void    ft_init(t_fractol *fractol)
             exit(EXIT_FAILURE);
         }
         // Use memset to initialize to 0
-        memset(fractol->point[i], 0, HEIGHT * sizeof(int));
+        //memset(f->point[i], 0, HEIGHT * sizeof(int));
     }*/
+    fractol->point = (int *)malloc(WIDTH * HEIGHT * sizeof(unsigned int));
 }
 
 int main(int argc, char **argv)

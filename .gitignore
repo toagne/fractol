@@ -4,6 +4,7 @@
 *~
 *.un~
 MLX42
+tests
 
 
 # Object files
