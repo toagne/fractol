@@ -6,23 +6,13 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:23:37 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/05 10:18:17 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/09 16:45:27 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fractol.h"
 
-int ft_strcmp(char *str1, const char *str2)
-{
-	while (*str1 && (*str1 == *str2))
-	{
-		str1++;
-		str2++;
-	}
-	return (*(unsigned char *)str1 - *(unsigned char *)str2);
-}
-
-int	ft_isspace_plus_or_minus(char *str, int *negative)
+static int	ft_isspace_plus_or_minus(char *str, int *negative)
 {
 	int	i;
 
@@ -37,7 +27,7 @@ int	ft_isspace_plus_or_minus(char *str, int *negative)
 	return (i);
 }
 
-double	ft_atofl(char *str)
+static double	ft_atofl(char *str)
 {
 	int		i;
 	int		negative;
@@ -66,7 +56,7 @@ double	ft_atofl(char *str)
 	return (n * negative);
 }
 
-void	check_julia_params(char **argv, t_fractol *f)
+static void	check_julia_params(char **argv, t_fractol *f)
 {
 	f->x_julia = ft_atofl(argv[2]);
 	if (f->x_julia > 2.0 || f->x_julia < -2.0)
@@ -86,8 +76,8 @@ void	check_arguments(int argc, char **argv, t_fractol *f)
 {
 	if (argc == 2 && !ft_strcmp(argv[1], "mandelbrot"))
 		f->set = "mandelbrot";
-	else if (argc == 2 && !ft_strcmp(argv[1], "felce"))
-		f->set = "felce";
+	else if (argc == 2 && !ft_strcmp(argv[1], "fern"))
+		f->set = "fern";
 	else if (argc == 4 && !ft_strcmp(argv[1], "julia"))
 	{
 		f->set = "julia";
