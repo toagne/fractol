@@ -6,7 +6,7 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/09 16:26:15 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/10 16:24:58 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/11 09:28:11 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,13 +30,13 @@ double	ft_scale(double orig_num, double n_min, double n_max, double o_max)
 {
 	double	scale;
 
-	scale = (n_max - n_min) * original_num / o_max + n_min;
+	scale = (n_max - n_min) * orig_num / o_max + n_min;
 	return (scale);
 }
 
-t_complex_num	mandelbrot_equation(t_complex_num z, t_complex_num c)
+t_cmplx_n	mandelbrot_equation(t_cmplx_n z, t_cmplx_n c)
 {
-	t_complex_num	result;
+	t_cmplx_n	result;
 
 	result.x = ((z.x * z.x) - (z.y * z.y)) + c.x;
 	result.y = (2 * z.x * z.y) + c.y;

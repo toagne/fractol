@@ -6,13 +6,13 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/09 16:31:20 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/10 14:15:45 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/12 17:13:45 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fractol.h"
-
-unsigned int	get_rgba(int r, int g, int b, int a)
+/*
+static unsigned int	get_rgba(int r, int g, int b, int a)
 {
 	return ((r << 24) | (g << 16) | (b << 8) | (a));
 }
@@ -29,7 +29,7 @@ uint32_t	get_random_color(int *lcg_seed, t_fractol *fractol)
 	return (get_rgba(r, g, b, 255));
 }
 
-int	get_r_g_b(int color, char c)
+static int	get_r_g_b(int color, char c)
 {
 	if (c == 'r')
 		return ((color >> 24) & 0xFF);
@@ -41,7 +41,7 @@ int	get_r_g_b(int color, char c)
 		return (0);
 }
 
-uint32_t	get_scaled_color_1(uint32_t color, int new_color, double ratio)
+static uint32_t	get_scaled_color(uint32_t color, int new_color, double ratio)
 {
 	int		rgb_start[3];
 	int		rgb_end[3];
@@ -66,7 +66,7 @@ void	m_or_j_color(uint32_t *color, int n, t_fractol *f, int *lcg_seed)
 	if (n < 7)
 	{
 		ratio = (double)n / f->definition;
-		*color = get_scaled_color_1(0x000000FF, 0xFFFFFFFF, ratio);
+		*color = get_scaled_color(0x000000FF, 0xFFFFFFFF, ratio);
 		f->first_color = *color;
 	}
 	else
@@ -78,6 +78,26 @@ void	m_or_j_color(uint32_t *color, int n, t_fractol *f, int *lcg_seed)
 			f->second_color = get_random_color(lcg_seed, f);
 		}
 		ratio = (double)iteration / 3;
-		*color = get_scaled_color_1(f->first_color, f->second_color, ratio);
+		*color = get_scaled_color(f->first_color, f->second_color, ratio);
+	}
+}
+*/
+
+void	colors(mlx_key_data_t keydata, void *param)
+{
+	t_fractol	*f;
+	uint32_t	color[5];
+	int			index;
+
+	f = (t_fractol *)param;
+	if (keydata.key == MLX_KEY_C && keydata.action == MLX_PRESS)
+	{
+		color[0] = 0xFF00FFAA;
+		color[1] = 0x39FF14AA;
+		color[2] = 0x1E90FFAA;
+		color[3] = 0xFF69B4AA;
+		color[4] = 0xFFFF00AA;
+		index = f->definition % 4;
+		f->color = color[index];
 	}
 }

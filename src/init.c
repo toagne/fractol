@@ -6,35 +6,39 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/09 15:56:56 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/10 13:02:21 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/12 16:55:52 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fractol.h"
 
-void	ft_init(t_fractol *fractol)
+void	ft_init(t_fractol *f)
 {
-	fractol->zoom = 1.0;
-	fractol->x_shift = 0.0;
-	fractol->y_shift = 0.0;
-	fractol->lcg_a = 1103515245;
-	fractol->lcg_c = 12345;
-	fractol->lcg_m = 2147483648;
-	if (!ft_strcmp(fractol->set, "fern"))
+	f->zoom = 1.0;
+	f->x_shift = 0.0;
+	f->y_shift = 0.0;
+	f->lcg_a = 1103515245;
+	f->lcg_c = 12345;
+	f->lcg_m = 2147483648;
+	f->width = 1000;
+	f->height = 1000;
+	f->j_dynamic = 0;
+	f->color = 0xFFFFFFFF;
+	if (!ft_strcmp(f->set, "fern"))
 	{
-		fractol->definition = 1000000;
-		fractol->min_x = -3;
-		fractol->max_x = 3;
-		fractol->min_y = 0;
-		fractol->max_y = 10;
+		f->definition = 1000000;
+		f->min_x = -3;
+		f->max_x = 3;
+		f->min_y = 0;
+		f->max_y = 10;
 	}
 	else
 	{
-		fractol->definition = 3;
-		fractol->min_x = -2;
-		fractol->max_x = 2;
-		fractol->min_y = -2;
-		fractol->max_y = 2;
+		f->definition = 50;
+		f->min_x = -2;
+		f->max_x = 2;
+		f->min_y = -2;
+		f->max_y = 2;
 	}
-	fractol->point = (int *)malloc(WIDTH * HEIGHT * sizeof(unsigned int));
+	f->point = (int *)malloc(f->width * f->height * sizeof(unsigned int));
 }

@@ -6,7 +6,7 @@ LIBFT	:= ./libft
 HEADERS		:= -I ./include -I $(LIBMLX)/include
 LIBS		:= $(LIBMLX)/build/libmlx42.a -ldl -lglfw -pthread -lm -g
 SRCS		:= ./src/main.c ./src/check_arguments.c ./src/init.c ./src/utils.c ./src/fractol.c \
-			   ./src/maths.c ./src/colors.c ./src/mouse_and_keyboard.c
+			   ./src/maths.c ./src/mouse_and_keyboard.c ./src/colors.c
 OBJS		:= ${SRCS:.c=.o}
 
 all: libmlx $(NAME)
