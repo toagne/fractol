@@ -6,13 +6,13 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/09 16:35:48 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/12 17:12:58 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/15 16:40:07 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fractol.h"
 
-void	ft_cursor(double xpos, double ypos, void *param)
+static void	ft_cursor(double xpos, double ypos, void *param)
 {
 	t_fractol	*f;
 
@@ -50,7 +50,7 @@ void	ft_mouse(double xdelta, double ydelta, void *param)
 	ft_fractol(f);
 }
 
-void	arrows(mlx_key_data_t *keydata, t_fractol *f)
+static void	arrows(mlx_key_data_t *keydata, t_fractol *f)
 {
 	if (f->j_dynamic)
 	{
@@ -76,26 +76,37 @@ void	arrows(mlx_key_data_t *keydata, t_fractol *f)
 	}
 }
 
-void	ft_keyboard(mlx_key_data_t keydata, void *param)
+static void	def_and_color_set(mlx_key_data_t *keydata, t_fractol *f)
 {
-	t_fractol	*f;
-	int			def;
+	int	def;
 
-	f = (t_fractol *)param;
 	def = 1;
 	if (!ft_strcmp(f->set, "fern"))
 		def = 1000000;
+	if (keydata->key == MLX_KEY_KP_ADD && keydata->action == MLX_PRESS)
+		f->definition += def;
+	if (keydata->key == MLX_KEY_KP_SUBTRACT && keydata->action == MLX_PRESS)
+		f->definition -= def;
+	if (keydata->key == MLX_KEY_N && keydata->action == MLX_PRESS)
+		f->color_set = 0;
+	if (keydata->key == MLX_KEY_C && keydata->action == MLX_PRESS)
+		f->color_set = 1;
+	if (keydata->key == MLX_KEY_S && keydata->action == MLX_PRESS)
+		f->color_set = 2;
+}
+
+void	ft_keyboard(mlx_key_data_t keydata, void *param)
+{
+	t_fractol	*f;
+
+	f = (t_fractol *)param;
 	if (keydata.key == MLX_KEY_ESCAPE && keydata.action == MLX_PRESS)
 	{
+		free(f->point);
 		mlx_terminate(f->mlx_start);
 		exit (EXIT_SUCCESS);
 	}
-	if (keydata.key == MLX_KEY_KP_ADD && keydata.action == MLX_PRESS)
-		f->definition += def;
-	if (keydata.key == MLX_KEY_KP_SUBTRACT && keydata.action == MLX_PRESS)
-		f->definition -= def;
-//	if (keydata.key == MLX_KEY_C && keydata.action == MLX_PRESS)
-//		colors(f);
+	def_and_color_set(&keydata, f);
 	if (keydata.key == MLX_KEY_J)
 	{
 		if (keydata.action == MLX_REPEAT)

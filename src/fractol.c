@@ -6,7 +6,7 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/09 16:14:44 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/12 17:15:16 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/15 14:24:18 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,10 @@
 
 static void	convert_m_or_j_points(int x, int y, t_fractol **f)
 {
-	(*f)->z.x = ft_scale(x, (*f)->min_x, (*f)->max_x, (*f)->width) + (*f)->x_shift;
-	(*f)->z.y = ft_scale(y, (*f)->max_y, (*f)->min_y, (*f)->height) + (*f)->y_shift;
+	(*f)->z.x = ft_scale(x, (*f)->min_x, (*f)->max_x,
+			(*f)->width) + (*f)->x_shift;
+	(*f)->z.y = ft_scale(y, (*f)->max_y, (*f)->min_y,
+			(*f)->height) + (*f)->y_shift;
 	if (!ft_strcmp((*f)->set, "mandelbrot"))
 	{
 		(*f)->c.x = (*f)->z.x;
@@ -30,25 +32,25 @@ static void	convert_m_or_j_points(int x, int y, t_fractol **f)
 
 static void	create_m_or_j(int x, int y, t_fractol *f)
 {
-	//uint32_t		color;
-	//int				lcg_seed;
+	int				n;
 
-	f->iteration = 0;
-	//init_lcg(&lcg_seed, f, n);
+	n = 0;
 	convert_m_or_j_points(x, y, &f);
-	//f->first_color = 0x000000FF;
-	//f->second_color = get_random_color(&lcg_seed, f);
-	while (f->iteration < f->definition)
+	while (n < f->definition)
 	{
-		//m_or_j_color(&color, n, f, &lcg_seed);
-		//mlx_key_hook(f->mlx_start, &colors, f);
+		if (f->color_set == 0)
+			f->color = 0xFFFFFFFF;
+		if (f->color_set == 1)
+			colors(n, f);
+		else if (f->color_set == 2)
+			scaled_colors(n, f);
 		f->z = mandelbrot_equation(f->z, f->c);
 		if ((f->z.x * f->z.x) + (f->z.y * f->z.y) > 4)
 		{
 			mlx_put_pixel(f->mlx_image, x, y, f->color);
 			return ;
 		}
-		f->iteration++;
+		n++;
 	}
 	mlx_put_pixel(f->mlx_image, x, y, 0x000000FF);
 }
@@ -56,19 +58,19 @@ static void	create_m_or_j(int x, int y, t_fractol *f)
 static void	def_fern_points(double x, double y, t_fractol *f)
 {
 	int		n;
-	int		lcg_seed;
 	int		plot_x;
 	int		plot_y;
 
 	n = 0;
 	ft_bzero(f->point, f->width * f->height * sizeof(unsigned int));
-	init_lcg(&lcg_seed, f, n);
+	f->lcg_seed = 1103527590;
 	while (n < f->definition)
 	{
-		fern_equation(&x, &y, f, &lcg_seed);
+		fern_equation(&x, &y, f);
 		plot_x = rev_scale(x - f->x_shift, f->min_x, f->max_x, f->width);
 		plot_y = rev_scale(y - f->y_shift, f->max_y, f->min_y, f->height);
-		if (plot_x >= 0 && plot_x < f->width && plot_y >= 0 && plot_y < f->height)
+		if (plot_x >= 0 && plot_x < f->width
+			&& plot_y >= 0 && plot_y < f->height)
 			f->point[plot_y * f->width + plot_x] = 0x00FF00FF;
 		n++;
 	}

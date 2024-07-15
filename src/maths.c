@@ -6,16 +6,23 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/09 16:26:15 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/11 09:28:11 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/15 14:18:09 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fractol.h"
 
-int	my_rand(int *lcg_seed, t_fractol *f)
+int	my_rand(t_fractol *f)
 {
-	*lcg_seed = (f->lcg_a * (*lcg_seed) + f->lcg_c) % f->lcg_m;
-	return (*lcg_seed);
+	long	lcg_a;
+	long	lcg_c;
+	long	lcg_m;
+
+	lcg_a = 1103515245;
+	lcg_c = 12345;
+	lcg_m = 2147483648;
+	f->lcg_seed = (lcg_a * f->lcg_seed + lcg_c) % lcg_m;
+	return (f->lcg_seed);
 }
 
 int	rev_scale(double n, double new_min, double new_max, double old_max)
@@ -43,11 +50,11 @@ t_cmplx_n	mandelbrot_equation(t_cmplx_n z, t_cmplx_n c)
 	return (result);
 }
 
-void	fern_equation(double *x, double *y, t_fractol *f, int *lcg_seed)
+void	fern_equation(double *x, double *y, t_fractol *f)
 {
 	double	r;
 
-	r = (double)my_rand(lcg_seed, f) / RAND_MAX;
+	r = (double)my_rand(f) / RAND_MAX;
 	if (r < 0.01)
 	{
 		f->fern_new_x = 0;

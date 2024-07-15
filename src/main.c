@@ -6,7 +6,7 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/28 16:04:04 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/12 16:27:42 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/15 16:41:40 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,4 +29,6 @@ int	main(int argc, char **argv)
 	ft_fractol(&f);
 	mlx_loop(f.mlx_start);
 	mlx_terminate(f.mlx_start);
+	free(f.point);
+	exit(EXIT_SUCCESS);
 }

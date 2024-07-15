@@ -1,5 +1,5 @@
 NAME	:= fractol
-CFLAGS	:= -Wextra -Wall -Wunreachable-code -Ofast
+CFLAGS	:= -Wextra -Wall -Wunreachable-code -Ofast -g
 LIBMLX	:= ./MLX42
 LIBFT	:= ./libft
 

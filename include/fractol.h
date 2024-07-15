@@ -6,7 +6,7 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/01 09:40:06 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/12 17:13:33 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/15 16:50:46 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@
 # include <stdio.h>
 # include "../libft/libft.h"
 # include "../MLX42/include/MLX42/MLX42.h"
-//# include <string.h>
 
 # define ERROR_MESSAGE "please enter one of the following:\n\"./fractol mandelbrot\"\n\"./fractol julia <value_1> <value_2>\""
 
@@ -49,11 +48,6 @@ typedef struct s_fractol
 	double			y_julia;
 	int				*point;
 	uint32_t		color;
-	uint32_t		first_color;
-	uint32_t		second_color;
-	long			lcg_a;
-	long			lcg_c;
-	long			lcg_m;
 	t_cmplx_n		c;
 	t_cmplx_n		z;
 	double			fern_new_x;
@@ -64,31 +58,29 @@ typedef struct s_fractol
 	int				height;
 	int				j_dynamic;
 	int				iteration;
+	int				color_index;
+	int				color_set;
+	long			lcg_seed;
 }	t_fractol;
 
 void		check_arguments(int argc, char **argv, t_fractol *f);
 void		ft_fractol(t_fractol *fractol);
 void		ft_init(t_fractol *fractol);
 
-int			my_rand(int *lcg_seed, t_fractol *f);
+int			my_rand(t_fractol *f);
 int			rev_scale(double n, double new_min, double new_max, double old_max);
 t_cmplx_n	mandelbrot_equation(t_cmplx_n z, t_cmplx_n c);
 double		ft_scale(double orig_num, double n_min, double n_max, double o_max);
-void		fern_equation(double *x, double *y, t_fractol *f, int *lcg_seed);
+void		fern_equation(double *x, double *y, t_fractol *f);
 
 int			ft_strcmp(char *str1, const char *str2);
 void		ft_error(void);
 void		init_lcg(int *lcg_seed, t_fractol *f, int n);
-/*
-uint32_t	get_random_color(int *lcg_seed, t_fractol *fractol);
-void		m_or_j_color(uint32_t *color, int n, t_fractol *f, int *lcg_seed);
-*/
 
-void	colors(mlx_key_data_t keydata, void *param);
+void		colors(int n, t_fractol *f);
+void		scaled_colors(int n, t_fractol *f);
 
 void		ft_mouse(double xdelta, double ydelta, void *param);
 void		ft_keyboard(mlx_key_data_t keydata, void *param);
-//void		ft_resize(int32_t width, int32_t height, void* param);
-void		ft_cursor(double xpos, double ypos, void* param);
 
 #endif
