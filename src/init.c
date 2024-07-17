@@ -6,11 +6,18 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/09 15:56:56 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/15 17:00:41 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/16 09:31:06 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fractol.h"
+
+void	ft_malloc(t_fractol *f)
+{
+	f->point = (int *)malloc(f->width * f->height * sizeof(unsigned int));
+	if (!f->point)
+		exit(EXIT_FAILURE);
+}
 
 void	ft_init(t_fractol *f)
 {
@@ -38,5 +45,5 @@ void	ft_init(t_fractol *f)
 		f->min_y = -2;
 		f->max_y = 2;
 	}
-	f->point = (int *)malloc(f->width * f->height * sizeof(unsigned int));
+	ft_malloc(f);
 }

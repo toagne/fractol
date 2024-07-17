@@ -6,7 +6,7 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:23:37 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/15 17:17:39 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/16 10:59:49 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,13 +61,13 @@ static void	check_julia_params(char **argv, t_fractol *f)
 	f->x_julia = ft_atofl(argv[2]);
 	if (f->x_julia > 2.0 || f->x_julia < -2.0)
 	{
-		ft_putstr_fd(ERROR_MESSAGE, STDERR_FILENO);
+		ft_message();
 		exit (EXIT_FAILURE);
 	}
 	f->y_julia = ft_atofl(argv[3]);
 	if (f->y_julia > 2.0 || f->y_julia < -2.0)
 	{
-		ft_putstr_fd(ERROR_MESSAGE, STDERR_FILENO);
+		ft_message();
 		exit (EXIT_FAILURE);
 	}
 }
@@ -86,7 +86,7 @@ void	check_arguments(int argc, char **argv, t_fractol *f)
 	}
 	else
 	{
-		ft_putstr_fd(ERROR_MESSAGE, STDERR_FILENO);
+		ft_message();
 		exit (EXIT_FAILURE);
 	}
 }

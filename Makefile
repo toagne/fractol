@@ -1,5 +1,5 @@
 NAME	:= fractol
-CFLAGS	:= -Wextra -Wall -Wunreachable-code -Ofast -g
+CFLAGS	:= -Wextra -Wall -Werror -Wunreachable-code -Ofast -g
 LIBMLX	:= ./MLX42
 LIBFT	:= ./libft
 
@@ -11,24 +11,28 @@ OBJS		:= ${SRCS:.c=.o}
 
 all: libmlx $(NAME)
 
-libmlx:
-	@cmake $(LIBMLX) -B $(LIBMLX)/build && make -C $(LIBMLX)/build -j4
+.libmlx:
+	cmake $(LIBMLX) -B $(LIBMLX)/build && make -C $(LIBMLX)/build -j4
+	@touch .libmlx;
 
 %.o: %.c
-	@$(CC) $(CFLAGS) -o $@ -c $< $(HEADERS) && printf "Compiling: $(notdir $<)"
+	$(CC) $(CFLAGS) -o $@ -c $< $(HEADERS) && printf "Compiling: $(notdir $<)"
 
 $(NAME): $(OBJS)
 	make -C $(LIBFT)
-	@$(CC) $(OBJS) $(LIBS) ./libft/libft.a $(HEADERS) -o $(NAME)
+	$(CC) $(OBJS) $(LIBS) ./libft/libft.a $(HEADERS) -o $(NAME)
+
+libmlx: .libmlx
 
 clean:
 	make -C $(LIBFT) clean
-	@rm -rf $(OBJS)
-	@rm -rf $(LIBMLX)/build
+	rm -rf $(OBJS)
+	rm -rf $(LIBMLX)/build
+	@rm -rf .libmlx
 
 fclean: clean
 	make -C $(LIBFT) fclean
-	@rm -rf $(NAME)
+	rm -rf $(NAME)
 
 re: clean all
 

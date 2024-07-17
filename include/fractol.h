@@ -6,7 +6,7 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/01 09:40:06 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/15 16:50:46 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/16 11:04:43 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,6 @@
 # include <stdio.h>
 # include "../libft/libft.h"
 # include "../MLX42/include/MLX42/MLX42.h"
-
-# define ERROR_MESSAGE "please enter one of the following:\n\"./fractol mandelbrot\"\n\"./fractol julia <value_1> <value_2>\""
-
-//# define WIDTH 1500
-//# define HEIGHT 1500
 
 typedef struct s_cmplx_n
 {
@@ -57,8 +52,6 @@ typedef struct s_fractol
 	int				width;
 	int				height;
 	int				j_dynamic;
-	int				iteration;
-	int				color_index;
 	int				color_set;
 	long			lcg_seed;
 }	t_fractol;
@@ -74,8 +67,8 @@ double		ft_scale(double orig_num, double n_min, double n_max, double o_max);
 void		fern_equation(double *x, double *y, t_fractol *f);
 
 int			ft_strcmp(char *str1, const char *str2);
-void		ft_error(void);
-void		init_lcg(int *lcg_seed, t_fractol *f, int n);
+void		ft_error(t_fractol *f);
+void		ft_message(void);
 
 void		colors(int n, t_fractol *f);
 void		scaled_colors(int n, t_fractol *f);

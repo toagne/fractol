@@ -6,7 +6,7 @@
 /*   By: mpellegr <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/28 16:04:04 by mpellegr          #+#    #+#             */
-/*   Updated: 2024/07/15 16:41:40 by mpellegr         ###   ########.fr       */
+/*   Updated: 2024/07/16 10:12:51 by mpellegr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,10 @@ int	main(int argc, char **argv)
 	ft_init(&f);
 	f.mlx_start = mlx_init(f.width, f.height, "fractol", false);
 	if (!f.mlx_start)
-		ft_error();
+		ft_error(&f);
 	f.mlx_image = mlx_new_image(f.mlx_start, f.width, f.height);
 	if (!f.mlx_image)
-		ft_error();
+		ft_error(&f);
 	mlx_key_hook(f.mlx_start, &ft_keyboard, &f);
 	mlx_scroll_hook(f.mlx_start, &ft_mouse, &f);
 	ft_fractol(&f);
